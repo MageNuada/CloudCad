@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CADCore", "CADCore\CADCore.csproj", "{8AA0F82E-F6C7-4FDB-9685-2365FF98F6CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CADView", "CADView\CADView.csproj", "{B0D63CB5-087B-4F7F-82E8-2AE6A7DD04B2}"
+EndProject
+Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8AA0F82E-F6C7-4FDB-9685-2365FF98F6CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AA0F82E-F6C7-4FDB-9685-2365FF98F6CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AA0F82E-F6C7-4FDB-9685-2365FF98F6CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AA0F82E-F6C7-4FDB-9685-2365FF98F6CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0D63CB5-087B-4F7F-82E8-2AE6A7DD04B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0D63CB5-087B-4F7F-82E8-2AE6A7DD04B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0D63CB5-087B-4F7F-82E8-2AE6A7DD04B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0D63CB5-087B-4F7F-82E8-2AE6A7DD04B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
