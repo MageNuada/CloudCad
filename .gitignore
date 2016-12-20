@@ -1,4 +1,11 @@
 */bin/
 */obj/
+*/Debug/
+*/Release/
 CADView160523.vspx
 *.exe
+*.tlog
+*.ipch
+TestProjectCPP/TestProjectCPP.VC.VC.opendb
+TestProjectCPP/TestProjectCPP.VC.db
+*.idb
