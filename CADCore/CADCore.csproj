@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CADCore</RootNamespace>
-    <AssemblyName>CADCore</AssemblyName>
+    <AssemblyName>CADController</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -55,7 +55,7 @@
     <Compile Include="2DGeometry.cs" />
     <Compile Include="2DOperations.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="Document.cs" />
+    <Compile Include="CadDocument.cs" />
     <Compile Include="DocumentControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -65,8 +65,8 @@
     <Compile Include="Enums.cs" />
     <Compile Include="Management.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TextBlock.cs" />
-    <Compile Include="TextBlockUtils.cs" />
+    <Compile Include="Serialization\Serialization.cs" />
+    <Compile Include="Serialization\TextBlock.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

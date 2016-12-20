@@ -10,13 +10,13 @@ namespace CADCore
         public override OperationReturnValue Execute()
         {
             /*
-            _line = (Line) OwnerDocument.CreateCADObject(ElementTypes.Line, this);
+            _line = (Line) OwnerCadDocument.CreateCADObject(ElementTypes.Line, this);
             _line.Start = GetUserInput(event.MouseUp).Position;
             _line.End = GetUserInput(event.MouseUp).Position;
             return OperationReturnValue.EndOperation;
              */
 
-            _line = (Line) OwnerDocument.CreateCADObject(ElementTypes.Line, this);
+            _line = (Line) OwnerCadDocument.CreateCADObject(ElementTypes.Line, this);
             EventArgs m;
             do
             {
@@ -50,7 +50,7 @@ namespace CADCore
             {
                 if (_circle == null)
                 {
-                    _circle = (Circle)OwnerDocument.CreateCADObject(ElementTypes.Circle);
+                    _circle = (Circle)OwnerCadDocument.CreateCADObject(ElementTypes.Circle);
                     _circle.Center = MousePoint;
                 }
                 else

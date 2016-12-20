@@ -35,13 +35,13 @@ namespace CADView
 
             TestOpLine.Click += delegate
             {
-                if (ManagementControl.Instance.CurrentDocument == null) return;
+                if (ManagementControl.Instance.CurrentCadDocument == null) return;
 
                 ManagementControl.Instance.BeginOperation("Create Line");
             };
             button5.Click += delegate
             {
-                if (ManagementControl.Instance.CurrentDocument == null) return;
+                if (ManagementControl.Instance.CurrentCadDocument == null) return;
 
                 ManagementControl.Instance.BeginOperation("Create Circle");
             };
@@ -49,9 +49,9 @@ namespace CADView
             button4.Click +=
                 (sender, args) =>
                 {
-                    if (ManagementControl.Instance.CurrentDocument != null)
+                    if (ManagementControl.Instance.CurrentCadDocument != null)
                     {
-                        var block = ManagementControl.Instance.CurrentDocument.SaveDocument();
+                        var block = ManagementControl.Instance.CurrentCadDocument.SaveDocument();
                         block.SetAttribute("version", "Adem X");
                         block.SetAttribute("status", "unzipped");
                         File.WriteAllText(DateTime.Now.ToString().Replace('.', '_').Replace(':', '_') + ".txt",
@@ -68,26 +68,26 @@ namespace CADView
             var page = new TabPage();
             tabControl1.TabPages.Add(page);
             page.Controls.Add(new DocumentControl { Dock = DockStyle.Fill });
-            page.Text = ManagementControl.Instance.CurrentDocument.DocumentID.ToString();
-            page.Tag = ManagementControl.Instance.CurrentDocument;
+            page.Text = ManagementControl.Instance.CurrentCadDocument.DocumentID.ToString();
+            page.Tag = ManagementControl.Instance.CurrentCadDocument;
             tabControl1.SelectTab(page);
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ManagementControl.Instance.CurrentDocument.History.Undo();
+            ManagementControl.Instance.CurrentCadDocument.History.Undo();
             Refresh();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            ManagementControl.Instance.CurrentDocument.History.Redo();
+            ManagementControl.Instance.CurrentCadDocument.History.Redo();
             Refresh();
         }
 
         private void tabControl1_Selected(object sender, TabControlEventArgs e)
         {
-            ManagementControl.Instance.CurrentDocument = (CADDocument)e.TabPage.Tag;
+            ManagementControl.Instance.CurrentCadDocument = (CadDocument)e.TabPage.Tag;
             Refresh();
         }
     }

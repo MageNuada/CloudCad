@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms;
+using CADCore.Serialization;
 using Engine;
 
 namespace CADCore
@@ -13,8 +14,8 @@ namespace CADCore
 
             if (ManagementControl.Instance != null)
             {
-                UsedDocument = ManagementControl.Instance.CreateDocument(this);
-                DocumentTree.Text = "untitled" + UsedDocument.DocumentID;
+                UsedCadDocument = ManagementControl.Instance.CreateDocument(this);
+                DocumentTree.Text = "untitled" + UsedCadDocument.DocumentID;
                 DocumentTree.ExpandAll();
             }
             else
@@ -28,16 +29,16 @@ namespace CADCore
         {
         }
 
-        public CADDocument UsedDocument { get; private set; }
+        public CadDocument UsedCadDocument { get; private set; }
 
         void ElementProperties_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
-            var element = ElementProperties.SelectedObject as CADObject;
+            var element = ElementProperties.SelectedObject as CadObject;
             if (element != null)
             {
                 TextBlock block = new TextBlock();
                 element.Save(block.AddChild(element.GetType().Name));
-                UsedDocument.History.AddUndo(new HistoryControl.HistoryRecord(block, RecordType.PropertyChangedType));
+                UsedCadDocument.History.AddUndo(new HistoryControl.HistoryRecord(block, RecordType.PropertyChangedType));
             }
         }
 

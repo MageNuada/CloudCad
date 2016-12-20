@@ -66,7 +66,7 @@ namespace CADCore
         {
             foreach (var i in Parents)
             {
-                ManagementControl.Instance.CurrentDocument.ObjectsDictionary[i].OnDataChange(vertexEvent);
+                ManagementControl.Instance.CurrentCadDocument.ObjectsDictionary[i].OnDataChange(vertexEvent);
             }
         }
 
@@ -81,7 +81,7 @@ namespace CADCore
         }
     }
 
-    public class Line : CADObject
+    public class Line : CadObject
     {
         public Line()
         {
@@ -123,7 +123,7 @@ namespace CADCore
         }
     }
 
-    public class Circle : CADObject
+    public class Circle : CadObject
     {
         public Circle()
         {
@@ -160,7 +160,7 @@ namespace CADCore
         }
     }
 
-    public class Arc : CADObject
+    public class Arc : CadObject
     {
         [FieldSerialize] private Point _center;
         [FieldSerialize] private double _radius;

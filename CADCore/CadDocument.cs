@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using CADCore.Serialization;
 using Engine;
 
 namespace CADCore
@@ -106,9 +107,9 @@ namespace CADCore
         }
     }
 
-    public class CADDocument
+    public class CadDocument
     {
-        public CADDocument()
+        public CadDocument()
         {
             DocumentID = ++_docIdCounter;
             _history = new HistoryControl(this);
@@ -143,13 +144,13 @@ namespace CADCore
             get { return _history; }
         }
 
-        private readonly AccessDictionary<int, CADObject> _objectsDictionary = new AccessDictionary<int, CADObject>();
-        private readonly ConcurrentDictionary<int, CADObject> _temporaryObjectsDictionary = new ConcurrentDictionary<int, CADObject>();
+        private readonly AccessDictionary<int, CadObject> _objectsDictionary = new AccessDictionary<int, CadObject>();
+        private readonly ConcurrentDictionary<int, CadObject> _temporaryObjectsDictionary = new ConcurrentDictionary<int, CadObject>();
 
         /// <summary>
         /// Словарь всех объектов документа. Не изменять коллекцию!
         /// </summary>
-        public AccessDictionary<int, CADObject> ObjectsDictionary
+        public AccessDictionary<int, CadObject> ObjectsDictionary
         {
             get { return _objectsDictionary; }
         }
@@ -159,7 +160,7 @@ namespace CADCore
         /// </summary>
         /// <param name="elemType">Тип элемента из перечисления <see cref="ElementTypes"/></param>
         /// <returns>Возвращает созданный объект или null в случае неудачи</returns>
-        public CADObject CreateCADObject(ElementTypes elemType, UserOperation operation)
+        public CadObject CreateCADObject(ElementTypes elemType, UserOperation operation)
         {
             return CreateCADObject(elemType, -1, operation);
         }
@@ -170,9 +171,9 @@ namespace CADCore
         /// <param name="elemType">Тип элемента из перечисления <see cref="ElementTypes"/></param>
         /// <param name="id">ИД объекта, если загружается ранее созданный объект. Для выделения нового ИД надо ставить значение -1.</param>
         /// <returns>Возвращает созданный объект или null в случае неудачи</returns>
-        internal CADObject CreateCADObject(ElementTypes elemType, int id, UserOperation operation)
+        internal CadObject CreateCADObject(ElementTypes elemType, int id, UserOperation operation)
         {
-            CADObject o = null;
+            CadObject o = null;
             switch (elemType)
             {
                 case ElementTypes.Line:
@@ -210,7 +211,7 @@ namespace CADCore
             return o;
         }
 
-        public void PostCreateCADObject(CADObject obj)
+        public void PostCreateCADObject(CadObject obj)
         {
             if (obj.LockOperation != null)
             {
@@ -251,8 +252,8 @@ namespace CADCore
         public TextBlock SaveDocument()
         {
             TextBlock file = new TextBlock();
-            CADObject.SaveField(CADObject.FindField("allVertices", GetType()), this, file);
-            foreach (CADObject o in ObjectsDictionary.Values)
+            EntitySerialization.SaveField(EntitySerialization.FindField("allVertices", GetType()), this, file);
+            foreach (CadObject o in ObjectsDictionary.Values)
             {
                 o.Save(file.AddChild(o.GetType().Name));
             }

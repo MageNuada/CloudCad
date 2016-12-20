@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CADCore.Serialization;
 using Engine;
 using Engine.MathEx;
 
@@ -23,28 +24,28 @@ namespace CADCore
         public UserOperation()
         {
             UserInputEvent = new ConcurrentQueue<EventArgs>();
-            TemporaryObjectsDictionary = new ConcurrentDictionary<int, CADObject>();
+            TemporaryObjectsDictionary = new ConcurrentDictionary<int, CadObject>();
         }
 
-        public ConcurrentDictionary<int, CADObject> TemporaryObjectsDictionary { get; private set; }
+        public ConcurrentDictionary<int, CadObject> TemporaryObjectsDictionary { get; private set; }
 
         public ConcurrentQueue<EventArgs> UserInputEvent { get; private set; }
 
-        public CADDocument OwnerDocument { get; internal set; }
+        public CadDocument OwnerCadDocument { get; internal set; }
 
         //WORKPLANE
 
         [DefaultValue(0.0)]
         public double MouseX
         {
-            private get { return _mouseX*ManagementControl.Instance.CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Width; }
+            private get { return _mouseX*ManagementControl.Instance.CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Width; }
             set { _mouseX = value; }
         }
 
         [DefaultValue(0.0)]
         public double MouseY
         {
-            private get { return _mouseY*ManagementControl.Instance.CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Height; }
+            private get { return _mouseY*ManagementControl.Instance.CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Height; }
             set { _mouseY = value; }
         }
 
@@ -67,7 +68,8 @@ namespace CADCore
                 UserInputEvent.TryDequeue(out e);
                 if (eventType == UserInputEventType.None) return true;
 
-                if (e is KeyEventArgs && ((KeyEventArgs) e).KeyData == Keys.Escape)
+                KeyEventArgs args = e as KeyEventArgs;
+                if (args != null && args.KeyData == Keys.Escape)
                     return false;
 
                 if ((eventType & UserInputEventType.Keyboard) != 0 && e is KeyEventArgs)
@@ -81,9 +83,9 @@ namespace CADCore
                     MousePoint = (Point) new Vec3D(m.X, m.Y, 0);
                     if ((ManagementControl.Instance.MouseLink & MouseLinkingType.Vertex) != 0)
                     {
-                        for (int i = 0; i < OwnerDocument.AllVertices.Count - 1; i++)
+                        for (int i = 0; i < OwnerCadDocument.AllVertices.Count - 1; i++)
                         {
-                            Point p = OwnerDocument.AllVertices[i];
+                            Point p = OwnerCadDocument.AllVertices[i];
                             if ((p - new Vec3D(MouseX, MouseY, 0)).LengthSqr() >= LinkDistanceSquare) continue;
                             MousePoint = p;
                             break;
@@ -182,34 +184,34 @@ namespace CADCore
             OperationsDictionary.Add("Create Circle", typeof(CreateCircle));
         }
 
-        private void OnBeforeSetActiveDocument(CADDocument newDocument)
+        private void OnBeforeSetActiveDocument(CadDocument newCadDocument)
         {
-            if (CurrentDocument != null)
+            if (CurrentCadDocument != null)
             {
-                //EndOperation(CurrentDocument);
+                //EndOperation(CurrentCadDocument);
 
-                CurrentDocument.ParentControl.RenderWorkPanel.MouseMove -= ManagementMouseMove;
-                CurrentDocument.ParentControl.RenderWorkPanel.MouseDown -= ManagementMouseDown;
-                CurrentDocument.ParentControl.RenderWorkPanel.MouseUp -= ManagementMouseUp;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.MouseMove -= ManagementMouseMove;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.MouseDown -= ManagementMouseDown;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.MouseUp -= ManagementMouseUp;
 
-                CurrentDocument.ParentControl.RenderWorkPanel.KeyDown -= ManagementKeyDown;
-                CurrentDocument.ParentControl.RenderWorkPanel.KeyUp -= ManagementKeyUp;
-                CurrentDocument.ParentControl.RenderWorkPanel.KeyPress -= ManagementKeyPress;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.KeyDown -= ManagementKeyDown;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.KeyUp -= ManagementKeyUp;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.KeyPress -= ManagementKeyPress;
 
-                CurrentDocument.ParentControl.RenderWorkPanel.Paint -= ManagementPaint;
+                CurrentCadDocument.ParentControl.RenderWorkPanel.Paint -= ManagementPaint;
             }
 
-            if (newDocument != null)
+            if (newCadDocument != null)
             {
-                newDocument.ParentControl.RenderWorkPanel.MouseMove += ManagementMouseMove;
-                newDocument.ParentControl.RenderWorkPanel.MouseDown += ManagementMouseDown;
-                newDocument.ParentControl.RenderWorkPanel.MouseUp += ManagementMouseUp;
+                newCadDocument.ParentControl.RenderWorkPanel.MouseMove += ManagementMouseMove;
+                newCadDocument.ParentControl.RenderWorkPanel.MouseDown += ManagementMouseDown;
+                newCadDocument.ParentControl.RenderWorkPanel.MouseUp += ManagementMouseUp;
 
-                newDocument.ParentControl.RenderWorkPanel.KeyDown += ManagementKeyDown;
-                newDocument.ParentControl.RenderWorkPanel.KeyUp += ManagementKeyUp;
-                newDocument.ParentControl.RenderWorkPanel.KeyPress += ManagementKeyPress;
+                newCadDocument.ParentControl.RenderWorkPanel.KeyDown += ManagementKeyDown;
+                newCadDocument.ParentControl.RenderWorkPanel.KeyUp += ManagementKeyUp;
+                newCadDocument.ParentControl.RenderWorkPanel.KeyPress += ManagementKeyPress;
 
-                newDocument.ParentControl.RenderWorkPanel.Paint += ManagementPaint;
+                newCadDocument.ParentControl.RenderWorkPanel.Paint += ManagementPaint;
             }
         }
 
@@ -219,7 +221,7 @@ namespace CADCore
         {
             try
             {
-                foreach (var o in CurrentDocument.ObjectsDictionary)
+                foreach (var o in CurrentCadDocument.ObjectsDictionary)
                 {
                     o.Value.Draw(e.Graphics);
                 }
@@ -230,16 +232,16 @@ namespace CADCore
                         o.Value.Draw(e.Graphics);
                     }
                 }
-                //foreach (var o in CurrentDocument.TemporaryObjectsDictionary)
+                //foreach (var o in CurrentCadDocument.TemporaryObjectsDictionary)
                 //{
                 //    o.Value.Draw(e.Graphics);
                 //}
 
                 if ((MouseLink & MouseLinkingType.Vertex) != 0)
                 {
-                    for (int i = 0; i < CurrentDocument.AllVertices.Count; i++)
+                    for (int i = 0; i < CurrentCadDocument.AllVertices.Count; i++)
                     {
-                        Point p = CurrentDocument.AllVertices[i];
+                        Point p = CurrentCadDocument.AllVertices[i];
                         e.Graphics.FillRectangle(Brushes.Red, (float) (p.X - 2), (float) (p.Y - 2), 4, 4);
                     }
                 }
@@ -289,21 +291,21 @@ namespace CADCore
         {
             foreach (var operation in ActiveOperations)
             {
-                operation.MouseX = e.X / (float)CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Width;
-                operation.MouseY = e.Y / (float)CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Height;
+                operation.MouseX = e.X / (float)CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Width;
+                operation.MouseY = e.Y / (float)CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Height;
                 operation.OnMouseUp(e);
                 operation.UserInputEvent.Enqueue(e);
             }
 
-            CurrentDocument.ParentControl.RenderWorkPanel.Focus();
+            CurrentCadDocument.ParentControl.RenderWorkPanel.Focus();
         }
 
         private void ManagementMouseDown(object sender, MouseEventArgs e)
         {
             foreach (var operation in ActiveOperations)
             {
-                operation.MouseX = e.X / (float)CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Width;
-                operation.MouseY = e.Y / (float)CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Height;
+                operation.MouseX = e.X / (float)CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Width;
+                operation.MouseY = e.Y / (float)CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Height;
                 operation.OnMouseDown();
                 operation.UserInputEvent.Enqueue(e);
             }
@@ -313,8 +315,8 @@ namespace CADCore
         {
             foreach (var operation in ActiveOperations)
             {
-                operation.MouseX = e.X / (float)CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Width;
-                operation.MouseY = e.Y / (float)CurrentDocument.ParentControl.RenderWorkPanel.ClientSize.Height;
+                operation.MouseX = e.X / (float)CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Width;
+                operation.MouseY = e.Y / (float)CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Height;
                 operation.OnMouseMove();
                 operation.UserInputEvent.Enqueue(e);
             }
@@ -322,8 +324,8 @@ namespace CADCore
 
         private void ManagementTick(float tickdelta)
         {
-            if (CurrentDocument != null)
-                CurrentDocument.ParentControl.RenderWorkPanel.Refresh();
+            if (CurrentCadDocument != null)
+                CurrentCadDocument.ParentControl.RenderWorkPanel.Refresh();
 
             /*return;
             for (int i = 0; i < ActiveOperations.Count; i++)
@@ -334,14 +336,14 @@ namespace CADCore
                 {
                     case OperationReturnValue.EndOperation:
                         ActiveOperations.RemoveAt(i);
-                        foreach (var o in new Dictionary<int, CADObject>(CurrentDocument.TemporaryObjectsDictionary))
-                            CurrentDocument.PostCreateCADObject(o.Value);
+                        foreach (var o in new Dictionary<int, CadObject>(CurrentCadDocument.TemporaryObjectsDictionary))
+                            CurrentCadDocument.PostCreateCADObject(o.Value);
                         EndOperation(operation);
 
                         break;
                     case OperationReturnValue.CancelOperation:
                         ActiveOperations.RemoveAt(i);
-                        CurrentDocument.TemporaryObjectsDictionary.Clear();
+                        CurrentCadDocument.TemporaryObjectsDictionary.Clear();
                         break;
                 }
             }*/
@@ -349,10 +351,10 @@ namespace CADCore
 
         #endregion
 
-        private readonly List<CADDocument> _documents = new List<CADDocument>();
+        private readonly List<CadDocument> _documents = new List<CadDocument>();
         private readonly List<UserOperation> _activeOperations = new List<UserOperation>();
-        private readonly List<CADObject> _oldObjects = new List<CADObject>();
-        private CADDocument _currentDocument;
+        private readonly List<CadObject> _oldObjects = new List<CadObject>();
+        private CadDocument _currentCadDocument;
         private static readonly Dictionary<string, Type> operationsDictionary = new Dictionary<string, Type>();
 
         public static Dictionary<string, Type> OperationsDictionary
@@ -360,13 +362,13 @@ namespace CADCore
             get { return operationsDictionary; }
         }
 
-        public CADDocument CurrentDocument
+        public CadDocument CurrentCadDocument
         {
-            get { return _currentDocument; }
+            get { return _currentCadDocument; }
             set
             {
                 OnBeforeSetActiveDocument(value);
-                _currentDocument = value;
+                _currentCadDocument = value;
             }
         }
 
@@ -378,26 +380,26 @@ namespace CADCore
         public MouseLinkingType MouseLink { get; set; }
         public bool LinkVertices { get; set; }
 
-        internal CADDocument CreateDocument(DocumentControl control)
+        internal CadDocument CreateDocument(DocumentControl control)
         {
-            CurrentDocument = new CADDocument {ParentControl = control};
-            _documents.Add(CurrentDocument);
-            return CurrentDocument;
+            CurrentCadDocument = new CadDocument {ParentControl = control};
+            _documents.Add(CurrentCadDocument);
+            return CurrentCadDocument;
         }
 
         public async void BeginOperation(string operationName)
         {
-            if (CurrentDocument == null) return;
+            if (CurrentCadDocument == null) return;
 
             _oldObjects.Clear();
-            _oldObjects.AddRange(CurrentDocument.ObjectsDictionary.Values);
-            CurrentDocument.ObjectsDictionary.StartAccessList();
+            _oldObjects.AddRange(CurrentCadDocument.ObjectsDictionary.Values);
+            CurrentCadDocument.ObjectsDictionary.StartAccessList();
 
             //call operation
             if (OperationsDictionary.ContainsKey(operationName))
             {
                 var operation = (UserOperation) Activator.CreateInstance(OperationsDictionary[operationName]);
-                operation.OwnerDocument = CurrentDocument;
+                operation.OwnerCadDocument = CurrentCadDocument;
                 ActiveOperations.Add(operation);
 
                 OperationReturnValue result = OperationReturnValue.CancelOperation;
@@ -406,7 +408,7 @@ namespace CADCore
                 try
                 {
                     task.Start();
-                    result = await task;
+                    result = await task.ContinueWith(task1 => task1.Result, new CancellationToken());
                 }
                 catch (Exception e)
                 {
@@ -416,9 +418,9 @@ namespace CADCore
                 if (result == OperationReturnValue.EndOperation)
                 {
                     ActiveOperations.Remove(operation);
-                    foreach (var o in new Dictionary<int, CADObject>(operation.TemporaryObjectsDictionary))
+                    foreach (var o in new Dictionary<int, CadObject>(operation.TemporaryObjectsDictionary))
                     {
-                        CurrentDocument.PostCreateCADObject(o.Value);
+                        CurrentCadDocument.PostCreateCADObject(o.Value);
                         o.Value.LockOperation = null;
                     }
                     EndOperation(operation);
@@ -435,14 +437,14 @@ namespace CADCore
         {
             //stop operation
 
-            var usedObjects = new List<CADObject>(operation.OwnerDocument.ObjectsDictionary.FinishAccessList());
+            var usedObjects = new List<CadObject>(operation.OwnerCadDocument.ObjectsDictionary.FinishAccessList());
             usedObjects.AddRange(operation.TemporaryObjectsDictionary.Values);
             TextBlock state = new TextBlock();
             foreach (var o in usedObjects)
             {
                 var objBlock = state.AddChild(o.GetType().Name);
                 o.Save(objBlock);
-                bool existInNew = operation.OwnerDocument.ObjectsDictionary.ContainsValue(o);
+                bool existInNew = operation.OwnerCadDocument.ObjectsDictionary.ContainsValue(o);
                 bool existInOld = _oldObjects.Contains(o);
 
                 if (existInNew && existInOld)
@@ -453,7 +455,7 @@ namespace CADCore
                     objBlock.SetAttribute("Status", ElemenetLifeStatus.Deleted.ToString("G"));
             }
 
-            operation.OwnerDocument.History.AddUndo(new HistoryControl.HistoryRecord(state, RecordType.OperationSuccededType));
+            operation.OwnerCadDocument.History.AddUndo(new HistoryControl.HistoryRecord(state, RecordType.OperationSuccededType));
         }
     }
 
@@ -490,9 +492,9 @@ namespace CADCore
         {
         }
 
-        public HistoryControl(CADDocument owner)
+        public HistoryControl(CadDocument ownerCad)
         {
-            OwnerDocument = owner;
+            OwnerCadDocument = ownerCad;
         }
         
         [DefaultValue(0)]
@@ -500,7 +502,7 @@ namespace CADCore
 
         private readonly List<HistoryRecord> _records = new List<HistoryRecord>();
 
-        public CADDocument OwnerDocument { get; private set; }
+        public CadDocument OwnerCadDocument { get; private set; }
 
         /// <summary>
         /// Добавление записи в историю undo-операций.
@@ -538,23 +540,23 @@ namespace CADCore
                 {
                     case ElemenetLifeStatus.Deleted:
                     {
-                        var o = OwnerDocument.CreateCADObject(
+                        var o = OwnerCadDocument.CreateCADObject(
                             (ElementTypes) Enum.Parse(typeof (ElementTypes), child.GetAttribute("elementType")),
                             int.Parse(child.GetAttribute("uid")), null);
                         o.Load(child);
-                        OwnerDocument.PostCreateCADObject(o);
+                        OwnerCadDocument.PostCreateCADObject(o);
                     }
                         break;
                     case ElemenetLifeStatus.Existed:
-                        OwnerDocument.ObjectsDictionary[int.Parse(child.GetAttribute("uid"))].Load(
+                        OwnerCadDocument.ObjectsDictionary[int.Parse(child.GetAttribute("uid"))].Load(
                             child);
                         break;
                     default:
-                        OwnerDocument.DeleteCADObject(int.Parse(child.GetAttribute("uid")));
+                        OwnerCadDocument.DeleteCADObject(int.Parse(child.GetAttribute("uid")));
                         break;
                 }
             }
-            OwnerDocument.ParentControl.ElementProperties.Refresh();
+            OwnerCadDocument.ParentControl.ElementProperties.Refresh();
         }
 
         /// <summary>
@@ -581,25 +583,25 @@ namespace CADCore
                 {
                     case ElemenetLifeStatus.Created:
                     {
-                        var o = OwnerDocument.CreateCADObject(
+                        var o = OwnerCadDocument.CreateCADObject(
                             (ElementTypes) Enum.Parse(typeof (ElementTypes), child.GetAttribute("elementType")),
                             int.Parse(child.GetAttribute("uid")), null);
                         o.Load(child);
-                        OwnerDocument.PostCreateCADObject(o);
+                        OwnerCadDocument.PostCreateCADObject(o);
                     }
                         break;
                     case ElemenetLifeStatus.Existed:
-                        OwnerDocument.ObjectsDictionary[int.Parse(child.GetAttribute("uid"))].Load(
+                        OwnerCadDocument.ObjectsDictionary[int.Parse(child.GetAttribute("uid"))].Load(
                             child);
                         break;
                     default:
-                        OwnerDocument.DeleteCADObject(int.Parse(child.GetAttribute("uid")));
+                        OwnerCadDocument.DeleteCADObject(int.Parse(child.GetAttribute("uid")));
                         break;
                 }
             }
 
             CurrentHistoryLevel++;
-            OwnerDocument.ParentControl.ElementProperties.Refresh();
+            OwnerCadDocument.ParentControl.ElementProperties.Refresh();
         }
 
         internal void Destroy()
