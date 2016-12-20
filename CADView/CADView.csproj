@@ -103,9 +103,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CADCore\CADCore.csproj">
+    <ProjectReference Include="..\CADController\CADController.csproj">
       <Project>{8aa0f82e-f6c7-4fdb-9685-2365ff98f6cf}</Project>
-      <Name>CADCore</Name>
+      <Name>CADController</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
