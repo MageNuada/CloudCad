@@ -38,14 +38,14 @@ namespace CADCore
         [DefaultValue(0.0)]
         public double MouseX
         {
-            private get { return _mouseX*ManagementControl.Instance.CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Width; }
+            private get { return _mouseX*CadManagementControl.Instance.CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Width; }
             set { _mouseX = value; }
         }
 
         [DefaultValue(0.0)]
         public double MouseY
         {
-            private get { return _mouseY*ManagementControl.Instance.CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Height; }
+            private get { return _mouseY*CadManagementControl.Instance.CurrentCadDocument.ParentControl.RenderWorkPanel.ClientSize.Height; }
             set { _mouseY = value; }
         }
 
@@ -81,7 +81,7 @@ namespace CADCore
                     MouseEventArgs m = (MouseEventArgs) e;
 
                     MousePoint = (Point) new Vec3D(m.X, m.Y, 0);
-                    if ((ManagementControl.Instance.MouseLink & MouseLinkingType.Vertex) != 0)
+                    if ((CadManagementControl.Instance.MouseLink & MouseLinkingType.Vertex) != 0)
                     {
                         for (int i = 0; i < OwnerCadDocument.AllVertices.Count - 1; i++)
                         {
@@ -91,7 +91,7 @@ namespace CADCore
                             break;
                         }
                     }
-                    if ((ManagementControl.Instance.MouseLink & MouseLinkingType.Intersection) != 0)
+                    if ((CadManagementControl.Instance.MouseLink & MouseLinkingType.Intersection) != 0)
                     {
 
                     }
@@ -142,19 +142,21 @@ namespace CADCore
 
     public interface ITick
     {
-        event ManagementControl.SystemTickDelegate TickEvent;
+        event CadManagementControl.SystemTickDelegate TickEvent;
+        void Start();
+        void Stop();
     }
 
-    public class ManagementControl
+    public class CadManagementControl
     {
-        private static ManagementControl _instance;
+        private static CadManagementControl _instance;
 
-        public static ManagementControl Instance
+        public static CadManagementControl Instance
         {
             get { return _instance; }
         }
 
-        private ManagementControl()
+        private CadManagementControl()
         {
             _instance = this;
         }
@@ -178,7 +180,7 @@ namespace CADCore
                 return;
             }
 
-            timer.TickEvent += new ManagementControl().ManagementTick;
+            timer.TickEvent += new CadManagementControl().ManagementTick;
 
             OperationsDictionary.Add("Create Line", typeof(CreateLine));
             OperationsDictionary.Add("Create Circle", typeof(CreateCircle));

@@ -66,7 +66,7 @@ namespace CADCore
         {
             foreach (var i in Parents)
             {
-                ManagementControl.Instance.CurrentCadDocument.ObjectsDictionary[i].OnDataChange(vertexEvent);
+                CadManagementControl.Instance.CurrentCadDocument.ObjectsDictionary[i].OnDataChange(vertexEvent);
             }
         }
 

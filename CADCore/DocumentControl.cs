@@ -12,9 +12,9 @@ namespace CADCore
 
             Load += DocumentControl_Load;
 
-            if (ManagementControl.Instance != null)
+            if (CadManagementControl.Instance != null)
             {
-                UsedCadDocument = ManagementControl.Instance.CreateDocument(this);
+                UsedCadDocument = CadManagementControl.Instance.CreateDocument(this);
                 DocumentTree.Text = "untitled" + UsedCadDocument.DocumentID;
                 DocumentTree.ExpandAll();
             }

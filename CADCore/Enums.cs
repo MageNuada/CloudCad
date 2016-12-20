@@ -17,6 +17,9 @@ namespace CADCore
         Count,
     }
 
+    /// <summary>
+    /// Состояние элемента в момент сохранения.
+    /// </summary>
     internal enum ElemenetLifeStatus
     {
         Existed = 0,
