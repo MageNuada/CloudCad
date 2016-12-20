@@ -9,3 +9,7 @@ CADView160523.vspx
 TestProjectCPP/TestProjectCPP.VC.VC.opendb
 TestProjectCPP/TestProjectCPP.VC.db
 *.idb
+Debug/
+Release/
+CADSystem.VC.VC.opendb
+CADSystem.VC.db
